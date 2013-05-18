@@ -120,8 +120,8 @@ Reset the song
 
 Set the tempo (and swing/shuffle)
 
-	curl -X POST -d bpm=125 http://localhost:8832/song
-	curl -X POST -d shuffle=33 http://localhost:8832/song
+	curl -X POST -d bpm=110 http://localhost:8832/song
+	curl -X POST -d shuffle=20 http://localhost:8832/song
 
 Set up first track to send the drums on the default midi drum channel (10)
 
@@ -166,12 +166,29 @@ Set up and enable the second track
 Reset the pattern and enable it
 
 	curl -X DELETE http://localhost:8832/song/track/1/pattern/0
-	curl -X POST -d enable=true -d start=0 -d end=2 http://localhost:8832/song/track/1/pattern/0
+	curl -X POST -d enable=true -d start=0 -d end=8 http://localhost:8832/song/track/1/pattern/0
 
 Add a bassline loop
 
 	curl -X POST -d note=36 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/0
 	curl -X POST -d note=48 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/2
+	curl -X POST -d note=36 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/3
+	curl -X POST -d note=72 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/4
+	curl -X POST -d note=48 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/5
+	curl -X POST -d note=36 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/6
+	curl -X POST -d note=48 -d velocity=100 http://localhost:8832/song/track/1/pattern/0/step/8
+
+Send some CC's too (not interpolated, just events quantized to the steps)
+
+	curl -X POST -d control=70 -d value=10 http://localhost:8832/song/track/1/pattern/0/step/0
+	curl -X POST -d control=70 -d value=30 http://localhost:8832/song/track/1/pattern/0/step/1
+	curl -X POST -d control=70 -d value=20 http://localhost:8832/song/track/1/pattern/0/step/2
+	curl -X POST -d control=70 -d value=10 http://localhost:8832/song/track/1/pattern/0/step/3
+	curl -X POST -d control=70 -d value=15 http://localhost:8832/song/track/1/pattern/0/step/4
+	curl -X POST -d control=70 -d value=30 http://localhost:8832/song/track/1/pattern/0/step/5
+	curl -X POST -d control=70 -d value=40 http://localhost:8832/song/track/1/pattern/0/step/6
+	curl -X POST -d control=70 -d value=20 http://localhost:8832/song/track/1/pattern/0/step/7
+	curl -X POST -d control=70 -d value=10 http://localhost:8832/song/track/1/pattern/0/step/8
 
 That's it!
 

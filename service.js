@@ -183,7 +183,7 @@ Service.prototype.addSongTrackPatternRoutes = function(server) {
 			sstep.addNote(parseInt(req.params.note, 10), parseInt(req.params.velocity || '127', 10));
 		}
 		if (req.params.control && req.params.value) {
-			sstep.addController(parseInt(req.params.control, 10), parseInt(req.params.value, 10));
+			sstep.addControl(parseInt(req.params.control, 10), parseInt(req.params.value, 10));
 		}
 		res.setHeader('content-type', 'text/plain');
 		res.send('ok');

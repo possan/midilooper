@@ -6,6 +6,7 @@
 exports.Step = function(){
 	
 	var _notes = [];
+	var _cc = [];
 	
 	return {
 		
@@ -13,8 +14,13 @@ exports.Step = function(){
 			return _notes;
 		},
 		
+		getCC: function() {
+			return _cc;
+		},
+		
 		clearStep: function() {
 			_notes = [];
+			_cc = [];
 		},
 		
 		clearNote: function(n) {
@@ -29,17 +35,31 @@ exports.Step = function(){
 		},
 		
 		isEmpty: function() {
-			return _notes.length == 0;
+			return _notes.length == 0 && _cc.length == 0;
 		},
 
-		setNote: function(n,v) {
+		setControl: function(c, v) {
+			var idx = -1;
+			for(var j=0; j<_cc.length; j++)
+				if( _cc[j].c == c )
+					idx = j;
+
+			if( idx == -1 ) {
+				console.log('adding cc');
+				_cc.push( { c: c, v: v } );
+			}
+			else {
+				console.log('updating cc #'+idx);
+				_cc[idx].v = v;
+			}
+		},
+
+		setNote: function(n, v) {
 			var idx = -1;
 			for(var j=0; j<_notes.length; j++)
 				if( _notes[j].n == n )
 					idx = j;
 
-			//	if( v > 0 ) {
-			
 			if( idx == -1 ) {
 				console.log('adding note');
 				_notes.push( { n: n, v: v } );
@@ -48,33 +68,41 @@ exports.Step = function(){
 				console.log('updating note #'+idx);
 				_notes[idx].v = v;
 			}
-		
-			/*	} else {
-			if( idx != -1 ){
-				console.log('removing note at index #'+idx);
-				_notes.splice(idx,1);
-			}
-			} */
 		},
 		
 		addNote: function(n,v) {
 			this.setNote(n,v);
 		},
 		
+		addControl: function(c,v) {
+			this.setControl(c,v);
+		},
+		
 		parseJson: function( json ) {
 			this.clearStep();
-			if( typeof(json.notes) != 'undefined' )
+			if( typeof(json.notes) != 'undefined' ) {
 				for( var j=0; j<json.notes.length; j++ ) {
 					_notes.push( json.notes[j] );
 				}
+			}
+			if( typeof(json.cc) != 'undefined' ) {
+				for( var j=0; j<json.cc.length; j++ ) {
+					_cc.push( json.cc[j] );
+				}
+			}
 		},
 	
 		toJson: function() {
-			var json = { };
+			var json = {};
 			if( _notes.length > 0 )
 				json.notes = [];
 			for( var j=0; j<_notes.length; j++ ){
 				json.notes.push(_notes[j]);
+			}
+			if( _cc.length > 0 )
+				json.cc = [];
+			for( var j=0; j<_cc.length; j++ ){
+				json.cc.push(_cc[j]);
 			}
 			return json;
 		}

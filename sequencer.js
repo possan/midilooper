@@ -57,6 +57,11 @@ exports.Sequencer = function(opts) {
 			}
 		},
 
+		sendCC : function(chan, control, val) {
+			console.log('sending CC ' + control + ' = '+val+' on channel '+chan);
+			_midiout([ 0xB0 + chan, control, val ]);
+		},
+		
 		queueNote : function(chan, note, vel, stepsdur) {
 			console.log('starting note '+note+' (velocity: ' + vel +', gate time: ' + stepsdur+') on channel '+chan);
 			_midiout([ 0x90 + chan, note, vel ]);
@@ -105,6 +110,8 @@ exports.Sequencer = function(opts) {
 			var strk = _song.getTrack(trackindex);
 			if (strk == null)
 				return;
+			if (strk.gate < 1)
+				return;
 			var spat = strk.getPattern(patindex);
 			if (spat == null)
 				return;
@@ -112,14 +119,19 @@ exports.Sequencer = function(opts) {
 			if (sstp == null)
 				return;
 			var snot = sstp.getNotes();
-			if (snot == null)
-				return;
-			if (strk.gate < 1)
-				return;
-			for ( var k = 0; k < snot.length; k++)
-				if (snot[k].v > 0)
-					this.queueNote(strk.channel, snot[k].n, snot[k].v,
-							strk.gate / 16);
+			var scc = sstp.getCC();
+			if (snot) {
+				for ( var k = 0; k < snot.length; k++) {
+					if (snot[k].v > 0) {
+						this.queueNote(strk.channel, snot[k].n, snot[k].v, strk.gate / 16);
+					}
+				}
+			}
+			if (scc) {
+				for ( var k = 0; k < scc.length; k++) {
+					this.sendCC(strk.channel, scc[k].c, scc[k].v);
+				}
+			}
 		},
 
 		_innerStep : function(firstbeat, resync) {
