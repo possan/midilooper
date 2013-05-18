@@ -58,7 +58,7 @@ exports.Sequencer = function(opts) {
 		},
 
 		queueNote : function(chan, note, vel, stepsdur) {
-			// console.log('starting note '+note+' on channel '+chan);
+			console.log('starting note '+note+' (velocity: ' + vel +', gate time: ' + stepsdur+') on channel '+chan);
 			_midiout([ 0x90 + chan, note, vel ]);
 			_runningnotes.push({
 				chan : chan,
@@ -100,6 +100,8 @@ exports.Sequencer = function(opts) {
 		},
 
 		queueEvents : function(trackindex, patindex, patstep) {
+			// console.log('queueEvents', trackindex, patindex, patstep);
+
 			var strk = _song.getTrack(trackindex);
 			if (strk == null)
 				return;
@@ -120,7 +122,8 @@ exports.Sequencer = function(opts) {
 							strk.gate / 16);
 		},
 
-		_innerStep : function(firstbeat,resync) {
+		_innerStep : function(firstbeat, resync) {
+			// console.log('_innerStep', firstbeat, resync);
 			for ( var j = 0; j < 16; j++) {
 				var trk = _tracks[j];
 				var strk = _song.getTrack(j);
@@ -155,6 +158,7 @@ exports.Sequencer = function(opts) {
 					}
 				}
 
+				// console.log('trk '+trk.currentPattern+'.'+trk.currentStep+' '+strk.enabled);
 				if (trk.currentPattern >= 0 && trk.currentStep >= 0
 						&& strk.enabled)
 					this.queueEvents(j, trk.currentPattern, trk.currentStep);

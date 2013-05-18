@@ -125,13 +125,13 @@ exports.Pattern = function() {
 		},
 		
 		parseJson: function(json) {
-			this.reset();
+			// this.reset();
 			if( typeof(json.enabled) != 'undefined' )
-				this.enabled = json.enabled;
+				this.enabled = (json.enabled == 'true' || json.enabled == true);
 			if( typeof(json.start) != 'undefined' )
-				this.start = json.start;
+				this.start = parseInt(json.start, 10);
 			if( typeof(json.end) != 'undefined' )
-				this.end = json.end;
+				this.end = parseInt(json.end, 10);
 			if( typeof(json.steps) != 'undefined' )
 				for( var j=0; j<json.steps.length; j++ ) {
 					var js = json.steps[j];
@@ -145,16 +145,16 @@ exports.Pattern = function() {
 				start: this.start,
 				end: this.end
 			};
-			if( !this.isEmpty() ){
-				json.steps = [];
-				for( var j=0; j<16; j++ ){
-					if( _steps[j].isEmpty() )
-						continue;
-					var data = _steps[ j ].toJson();
-					data.step = j;
-					json.steps.push( data );
-				}
+			// if( !this.isEmpty() ){
+			json.steps = [];
+			for( var j=0; j<16; j++ ){
+				if( _steps[j].isEmpty() )
+					continue;
+				var data = _steps[ j ].toJson();
+				data.step = j;
+				json.steps.push( data );
 			}
+			// }
 			return json;
 		}
 		
@@ -198,13 +198,15 @@ exports.SongTrack = function( index, channel, type ) {
 		
 		parseJson: function(json) {
 			if( typeof(json.enabled) != 'undefined' )
-				this.enabled = json.enabled;
+				this.enabled = (json.enabled == 'true' || json.enabled == true);
 			if( typeof(json.position) != 'undefined' )
-				this.position = json.position;	
+				this.position = parseInt(json.position, 10);
 			if( typeof(json.gate) != 'undefined' )
-				this.gate = json.gate;	
+				this.gate = parseInt(json.gate, 10);
+			if( typeof(json.channel) != 'undefined' )
+				this.channel = parseInt(json.channel, 10);
 			if( typeof(json.type) != 'undefined' )
-				this.type = json.type;	
+				this.type = json.type;
 			if( typeof(json.patterns) != 'undefined' )
 				for( var j=0; j<json.patterns.length; j++ ) {
 					var js = json.patterns[j];
@@ -259,10 +261,10 @@ exports.Song = function() {
 	
 		parseJson: function(json) {
 			if( typeof(json.bpm) != 'undefined' )
-				this.bpm = json.bpm;
+				this.bpm = parseInt(json.bpm, 10);
 			
 			if( typeof(json.shuffle) != 'undefined' )
-				this.shuffle = json.shuffle;
+				this.shuffle = parseInt(json.shuffle, 10);
 			
 			if( typeof(json.tracks) != 'undefined' )
 				for( var j=0; j<json.tracks.length; j++ ){
