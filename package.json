@@ -1,0 +1,26 @@
+{
+  "name": "midilooper",
+  "version": "0.0.0",
+  "description": "Restful MIDI Looper",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/possan/midilooper.git"
+  },
+  "author": "",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "45a0eb3e79e18c36768b45aacb149fa80df872e2",
+  "dependencies": {
+    "microtime": "~0.3.3",
+    "midi": "~0.7.0",
+    "restify": "~2.5.0"
+  },
+  "devDependencies": {}
+}
