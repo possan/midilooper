@@ -58,12 +58,12 @@ exports.Sequencer = function(opts) {
 		},
 
 		sendCC : function(chan, control, val) {
-			console.log('sending CC ' + control + ' = '+val+' on channel '+chan);
+			// console.log('sending CC ' + control + ' = '+val+' on channel '+chan);
 			_midiout([ 0xB0 + chan, control, val ]);
 		},
 		
 		queueNote : function(chan, note, vel, stepsdur) {
-			console.log('starting note '+note+' (velocity: ' + vel +', gate time: ' + stepsdur+') on channel '+chan);
+			// console.log('starting note '+note+' (velocity: ' + vel +', gate time: ' + stepsdur+') on channel '+chan);
 			_midiout([ 0x90 + chan, note, vel ]);
 			_runningnotes.push({
 				chan : chan,

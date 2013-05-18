@@ -205,6 +205,21 @@ exports.SongTrack = function( index, channel, type ) {
 		channel: channel,
 		gate: 4,
 		type: type,
+
+		reset: function() {
+			this.position = 0;
+			this.position = 0;
+			this.enabled = true;
+			this.advance = false;
+			this.cue = -1;
+			this.track = index;
+			this.channel = channel;
+			this.gate = 4;
+			this.type = type;
+			for(var i=0; i<16; i++) {
+				this.getPattern(i).reset();
+			}
+		},
 		
 		getPattern: function(s){
 			if( s < 0 || s >= 16 )
@@ -213,14 +228,12 @@ exports.SongTrack = function( index, channel, type ) {
 		},
 		
 		getNextEnabledPattern: function(lastpattern) {
-			// if(lastpattern == -1 ) {
 			for( var j=0; j<16; j++ )
 				if( _patterns[j].enabled && j > lastpattern )
 					return j;
 			for( var j=0; j<16; j++ )
 				if( _patterns[j].enabled )
 					return j;
-			// }
 			return -1;
 		},
 		
@@ -275,11 +288,22 @@ exports.Song = function() {
 			_tracks[j].getPattern(k).enabled = (k==0);
 		}
 	}
+
+	function _reset() {
+
+	}
 	
 	return {
 		
 		bpm: 140,
 		shuffle: 5,
+
+		reset: function() {
+			this.bpm = 140;
+			this.shuffle = 5;
+			for(var i=0; i<16; i++)
+				this.getTrack(i).reset();
+		},
 		
 		getTrack: function(n){
 			if( n < 0 || n >= 16 )

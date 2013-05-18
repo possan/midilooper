@@ -4,6 +4,7 @@ Service = function() {
 	this.port = 8832;
 	this.seq = null;
 	this.song = null;
+	this.liveset = null;
 }
 
 Service.prototype.addSongRoutes = function(server) {
@@ -11,6 +12,7 @@ Service.prototype.addSongRoutes = function(server) {
 
 	server.get('/song', function(req, res, next) {
 		var data = _this.song.toJson();
+		data.filename = _this.liveset.filename;
 		res.send(data);
 	});
 
@@ -21,19 +23,25 @@ Service.prototype.addSongRoutes = function(server) {
 	});
 
 	server.del('/song', function(req, res, next) {
-		console.log('TODO: clear song');
+		_this.liveset.reset();
 		res.setHeader('content-type', 'text/plain');
 		res.send('ok');
 	});
 
 	server.post('/song/load', function(req, res, next) {
-		console.log('TODO: support loading songs');
+		if (req.params.filename) {
+			_this.liveset.filename = req.params.filename;
+		}
+		_this.liveset.load();
 		res.setHeader('content-type', 'text/plain');
 		res.send('ok');
 	});
 
 	server.post('/song/save', function(req, res, next) {
-		console.log('TODO: support saving songs');
+		if (req.params.filename) {
+			_this.liveset.filename = req.params.filename;
+		}
+		_this.liveset.save();
 		res.setHeader('content-type', 'text/plain');
 		res.send('ok');
 	});
@@ -69,17 +77,13 @@ Service.prototype.addPlayerRoutes = function(server) {
 		});
 	});
 
-	server.get('/player/track/:track/cue', function(req, res, next) {
-		res.setHeader('content-type', 'text/plain');
-		res.send('ok');
-	});
-
 	server.post('/player/track/:track/cue', function(req, res, next) {
 		var track = parseInt(req.params.track, 10);
-		// var strk = _this.song.getTrack(track);
 		if (req.params.value) {
 			var pat = parseInt(req.params.value, 10);
-			_this.seq.cuePattern(track, pat);
+			if (pat) {
+				_this.seq.cuePattern(track, pat);
+			}
 		}
 		res.setHeader('content-type', 'text/plain');
 		res.send('ok');
@@ -243,7 +247,7 @@ Service.prototype.start = function() {
 	this.addSongTrackRoutes(server);
 	this.addSongTrackPatternRoutes(server);
 	server.listen(this.port, function() {
-	  console.log('%s listening at %s', server.name, server.url);
+		console.log('%s listening at %s', server.name, server.url);
 	});
 }
 

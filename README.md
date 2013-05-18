@@ -32,7 +32,7 @@ Quick introduction to the functionality of the API
 
 #### Load another song by filename:
 
-	curl -X POST -d value=othersong.json http://localhost:8832/song/load
+	curl -X POST -d filename=othersong.json http://localhost:8832/song/load
 	ok
 
 #### Save current song:

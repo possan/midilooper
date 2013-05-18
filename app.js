@@ -1,10 +1,10 @@
 var httpmodule = require('http');
-var fs = require('fs');
 var restify = require('restify');
 var songmodule = require('./song');
 var sequencermodule = require('./sequencer');
 var playermodule = require('./player');
 var servicemodule = require('./service');
+var livesetmodule = require('./liveset');
 
 //
 // Set up MIDI
@@ -18,6 +18,7 @@ console.log('port count:', midioutput.getPortCount());
 for (var k=0; k<midioutput.getPortCount(); k++)
 	console.log('port #'+k+':', midioutput.getPortName(k));
 midioutput.openPort(0);
+console.log('Using first.');
 
 //
 // Set up song and sequencer
@@ -38,39 +39,24 @@ var seq = new sequencermodule.Sequencer( {
 } );
 
 //
-// Load song and set up autosave
+// Set up the lievset
 //
 
-console.log('loading last saved song.');
+var liveset = new livesetmodule.Liveset();
+liveset.song = song;
+liveset.reset();
 
-doSave = function() {
-	// console.log('Auto-saving song...');
-	var json = song.toJson();
-	var str = JSON.stringify(json,null,'\t');
-	fs.writeFile('lastsong.json', str, function (err) {
-	  if (err) throw err;
-	  console.log('Auto-saved song.');
-	});
-};
+liveset.filename = 'default';
+if (process.argv.length > 2) {
+	liveset.filename = process.argv[2];
+}
 
-var loaded = false;
-fs.readFile('lastsong.json', function (err,json) {
-	loaded = true;
-	if (typeof(json) != 'undefined'){
-		try {
-			var data = JSON.parse(json);
-			if( data ){
-				console.log('loaded song',data);
-				song.parseJson(data);
-			}
-		} catch(e){
-			
-		}
-		doSave();
-	}
-});
+liveset.load();
+liveset.start();
 
-setInterval( function() { doSave(); }, 10000 );
+//
+// Load song and set up autosave
+//
 
 //
 // Set up sequence player
@@ -94,4 +80,5 @@ var service = new servicemodule.Service();
 service.port = 8832;
 service.seq = seq;
 service.song = song;
+service.liveset = liveset;
 service.start();
