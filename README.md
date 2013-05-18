@@ -53,24 +53,14 @@ Quick introduction to the functionality of the API
 	curl -X POST http://localhost:8832/song
 	{...}
 
-#### Get beats per minute:
-
-	curl http://localhost:8832/song/bpm
-	{"value":120}
-
 #### Update beats per minute:
 
-	curl -X POST -d value=125 http://localhost:8832/song/bpm
+	curl -X POST -d bpm=125 http://localhost:8832/song
 	ok
-
-#### Get shuffle amount:
-
-	curl http://localhost:8832/song/shuffle
-	{"value":0}
 
 #### Update shuffle amount:
 
-	curl -X POST -d value=50 http://localhost:8832/song/shuffle
+	curl -X POST -d shuffle=0 http://localhost:8832/song
 	ok
 
 
