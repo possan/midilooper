@@ -28,41 +28,41 @@ Quick introduction to the functionality of the API
 
 #### Load another song by filename:
 
-`curl -X POST -d value=othersong.json http://localhost:8832/song/load
-ok`
+	curl -X POST -d value=othersong.json http://localhost:8832/song/load
+	ok
 
 #### Save current song:
 
-`curl -X POST http://localhost:8832/song/save
-ok`
+	curl -X POST http://localhost:8832/song/save
+	ok
 
 
 ### Song information:
 
 #### Get the information about the current song:
 
-`curl -X POST http://localhost:8832/song
-{...}`
+	curl -X POST http://localhost:8832/song
+	{...}
 
-#### Get song BPM:
+#### Get beats per minute:
 
-`curl http://localhost:8832/song/bpm
-{"value":120}`
+	curl http://localhost:8832/song/bpm
+	{"value":120}
 
-#### Update song BPM:
+#### Update beats per minute:
 
-`curl -X POST -d value=125 http://localhost:8832/song/bpm
-ok`
+	curl -X POST -d value=125 http://localhost:8832/song/bpm
+	ok
 
-#### Get song shuffle amount:
+#### Get shuffle amount:
 
-`curl http://localhost:8832/song/shuffle
-{"value":0}`
+	curl http://localhost:8832/song/shuffle
+	{"value":0}
 
-#### Update song shuffle amount:
+#### Update shuffle amount:
 
-`curl -X POST -d value=50 http://localhost:8832/song/shuffle
-ok`
+	curl -X POST -d value=50 http://localhost:8832/song/shuffle
+	ok
 
 
 
