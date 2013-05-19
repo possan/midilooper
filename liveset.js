@@ -63,6 +63,7 @@ Liveset.prototype.queueAutosave = function() {
 }
 
 Liveset.prototype.start = function() {
+	this.queueAutosave();
 }
 
 exports.Liveset = Liveset;

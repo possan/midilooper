@@ -33,6 +33,8 @@ exports.Sequencer = function(opts) {
 		_tracks[j].currentStep = -1;
 	}
 
+	_midiout([ 0xFA ]);
+
 	var _runningnotes = [];
 
 	return {
@@ -185,8 +187,10 @@ exports.Sequencer = function(opts) {
 			
 			if (arg.player) {
 				var oldbpm = arg.player.getBPM();
-				if (_song.bpm != oldbpm)
+				if (_song.bpm != oldbpm) {
 					arg.player.setBPM(_song.bpm);
+					// send bpm change. 
+				}
 			}
 
 			
@@ -200,8 +204,13 @@ exports.Sequencer = function(opts) {
 
 			var stp = Math.floor(arg.step / arg.ppqn);
 			shufflestep = Math.floor( shufflestep * (stp % 2) );
-			
-			// console.log( 0, shufflestep, _ppqn );
+		
+			// console.log( stp, _ppqn, ppqnstep );
+
+			if (_step % 8 == 0) {
+				// console.log('beatmessage');
+				_midiout([ 0xF8 ]);
+			}
 
 			if (ppqnstep == shufflestep) {
 				// console.log('step at ppqn '+ppqnstep+'/'+_ppqn);
