@@ -182,3 +182,18 @@ Send some CC's too (not interpolated, just events quantized to the steps)
 
 That's it!
 
+
+#### Envelopes ####
+
+You can also trigger CC envelopes:
+
+	curl -X POST -d channel=0 -d control=74 http://localhost:8832/envelopes
+
+And also with a custom settings:
+
+	curl -X POST -d channel=0 -d control=74 -d attach=0.1 -d sustain=0.1 -d release=5.0 -d minvalue=0 -d maxvalue=127 http://localhost:8832/envelopes
+
+And get a list of all running envelopes:
+
+	curl http://localhost:8832/envelopes
+

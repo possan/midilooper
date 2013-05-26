@@ -14,6 +14,115 @@ var SeqTrack = function(opts) {
 	};
 };
 
+
+
+var Envelope = function() {
+	this.channel = 0;
+	this.control = 0;
+	this.attacktime = 0.1;
+	this.sustaintime = 0.1;
+	this.releasetime = 1.0;
+	this.state = 0;
+
+	this.startValue = 0;
+	this.targetValue = 0;
+
+	this.stepTimer = 0;
+	this.stepTime = 0;
+
+	this.value = 0;
+	this.lastvalue = 0;
+	this.minvalue = 0;
+	this.maxvalue = 127;
+	this.starttime = (new Date()).getTime()
+}
+
+Envelope.prototype.setup = function(def) {
+	console.log('setup envelope', def);
+	if (def.channel) this.channel = def.channel;
+	if (def.control) this.control = def.control;
+	if (def.attack) this.attacktime = def.attack;
+	if (def.release) this.releasetime = def.release;
+	if (def.sustain) this.sustaintime = def.sustain;
+	if (def.minvalue) this.minvalue = def.minvalue;
+	if (def.maxvalue) this.maxvalue = def.maxvalue;
+}
+
+Envelope.prototype.start = function() {
+	if (this.state == 0) {
+		// idle
+		this.state = 1;
+		this.stepTime = this.attacktime;
+		this.stepTimer = 0;
+		this.startValue = this.minvalue;
+		this.targetValue = this.maxvalue;
+	} else if (this.state == 1) {
+		// attacking, do nothing.
+		this.startValue = this.maxvalue;
+		this.targetValue = this.maxvalue;
+	} else if (this.state == 2) {
+		// sustaining, keep sustaining...
+		this.stepTime = this.sustaintime;
+		this.stepTimer = 0;
+		this.startValue = this.maxvalue;
+		this.targetValue = this.maxvalue;
+	} else if (this.state == 3) {
+		// releasing, go back to attack again.
+		this.state = 1;
+		this.stepTime = this.attacktime;
+		this.stepTimer = 0;
+		this.startValue = this.value;
+		this.targetValue = this.maxvalue;
+	}
+}
+
+Envelope.prototype.step = function(dt) {
+	this.stepTimer += dt;
+	if (this.state != 0 && this.stepTimer >= this.stepTime) {
+		// console.log('steptimer done.', this.stepTimer, this.stepTime);
+		if (this.state == 1) {
+			// attack done, go to sustain
+			this.state = 2;
+			this.stepTime = this.sustaintime;
+			this.stepTimer = 0;
+			this.startValue = this.maxvalue;
+			this.targetValue = this.maxvalue;
+		} else if (this.state == 2) {
+			// sustain done, go to release
+			this.state = 3;
+			this.stepTime = this.releasetime;
+			this.stepTimer = 0;
+			this.startValue = this.maxvalue;
+			this.targetValue = this.minvalue;
+		} else if (this.state == 3) {
+			// release done. go to idle.
+			this.state = 0;
+			this.startValue = this.minvalue;
+			this.targetValue = this.minvalue;
+		}
+	}
+	if (this.state == 0) {
+		// idle
+		this.value = this.startValue;
+	} else if (this.state == 1) {
+		// attacking, interpolate up
+		var nt = Math.max(0, Math.min(1, this.stepTimer / this.stepTime));
+		var invt = 1 - nt;
+		this.value = Math.round(this.startValue * invt + this.targetValue * nt);
+	} else if (this.state == 2) {
+		// sustaining, keep value 
+		this.value = this.targetValue;
+	} else if (this.state == 3) {
+		// releasing, interpolate down
+		var nt = Math.max(0, Math.min(1, this.stepTimer / this.stepTime));
+		var invt = 1 - nt;
+		this.value = Math.round(this.startValue * invt + this.targetValue * nt);
+	}
+	this.running = (this.state != 0);
+}
+
+
+
 exports.Sequencer = function(opts) {
 
 	var _ppqn = opts.ppqn || 96;
@@ -35,7 +144,13 @@ exports.Sequencer = function(opts) {
 
 	_midiout([ 0xFA ]);
 
+	_sendCC = function(chan, control, val) {
+		console.log('sending CC ' + control + ' = '+val+' on channel '+chan);
+		_midiout([ 0xB0 + chan, control, val ]);
+	};
+
 	var _runningnotes = [];
+	var _runningenvelopes = [];
 
 	return {
 
@@ -57,11 +172,6 @@ exports.Sequencer = function(opts) {
 					_runningnotes.splice(j, 1);
 				}
 			}
-		},
-
-		sendCC : function(chan, control, val) {
-			// console.log('sending CC ' + control + ' = '+val+' on channel '+chan);
-			_midiout([ 0xB0 + chan, control, val ]);
 		},
 		
 		queueNote : function(chan, note, vel, stepsdur) {
@@ -131,7 +241,7 @@ exports.Sequencer = function(opts) {
 			}
 			if (scc) {
 				for ( var k = 0; k < scc.length; k++) {
-					this.sendCC(strk.channel, scc[k].c, scc[k].v);
+					_sendCC(strk.channel, scc[k].c, scc[k].v);
 				}
 			}
 		},
@@ -180,6 +290,43 @@ exports.Sequencer = function(opts) {
 			}
 		},
 
+		triggerEnvelope: function(opts) {
+			console.log('trigger envelope', opts);
+			var found = -1;
+			for(var i=0; i<_runningenvelopes.length; i++) {
+				var re = _runningenvelopes[i];
+				if (re.channel == opts.channel && re.control == opts.control) {
+					found = i;
+				}
+			}			
+			if (found != -1) {
+				var re = _runningenvelopes[found];
+				re.setup(opts);
+				re.start();
+			} else {
+				var re = new Envelope();
+				re.setup(opts);
+				re.start();
+				_runningenvelopes.push(re);
+			}
+		},
+
+		getRunningEnvelopes: function() {
+			var data = [];
+			for(var i=0; i<_runningenvelopes.length; i++) {
+				var re = _runningenvelopes[i];
+				if (re.running) {
+					data.push({
+						channel: re.channel,
+						control: re.control,
+						state: re.state,
+						value: re.value
+					})
+				}
+			}			
+			return data;
+		},
+
 		step : function(arg) {
 
 			if( arg.ppqn )
@@ -193,6 +340,14 @@ exports.Sequencer = function(opts) {
 				}
 			}
 
+			for(var i=0; i<_runningenvelopes.length; i++) {
+				var re = _runningenvelopes[i];
+				re.step(arg.deltaTime);
+				if (re.value != re.lastvalue) {
+					_sendCC(re.channel, re.control, re.value);
+					re.lastvalue = re.value;
+				}
+			}
 			
 			this.removeOldNotes();
 			var shufflestep = Math.floor( _ppqn * _song.shuffle / 100.0 );

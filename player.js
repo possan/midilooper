@@ -25,6 +25,7 @@ exports.Player = function( opts ){
 	var _vclock = 0;
 	var _playclock = 0;
 	var _lt = 0;
+	var _lc = 0;
 
 	var exported = {
 	
@@ -63,6 +64,8 @@ exports.Player = function( opts ){
 		var t = microtime.nowDouble();
 		if( _lt == 0 )
 			_lt = t;
+		if( _lc == 0 )
+			_lc = t;
 
 		var dt = t - _lt;
 		_vclock += dt;
@@ -77,8 +80,12 @@ exports.Player = function( opts ){
 				_callback( { 
 					step : _step,
 					ppqn : _ppqn,
-					player: exported 
+					player: exported,
+					time: t,
+					deltaTime: t - _lc,
 				} );
+
+			_lc = t;
  
 			_step ++;
 			_playclock += _spt;

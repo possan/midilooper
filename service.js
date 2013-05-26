@@ -227,6 +227,52 @@ Service.prototype.addSongTrackRoutes = function(server) {
 
 }
 
+Service.prototype.addEnvelopeRoutes = function(server) {
+	var _this = this;
+
+	// edit tracks
+
+	server.get('/envelopes', function(req, res, next) {
+		var data = _this.seq.getRunningEnvelopes();
+		res.send(data);
+	});
+
+	server.post('/envelopes', function(req, res, next) {
+		console.log('Update track properties', req.params);
+
+		var fireargs = {
+			channel: 0,
+			control: 0
+		};
+
+		if (req.params.channel)
+			fireargs.channel = parseInt(req.params.channel, 10);
+
+		if (req.params.control)
+			fireargs.control = parseInt(req.params.control, 10);
+
+		if (req.params.attack)
+			fireargs.attack = parseFloat(req.params.attack);
+
+		if (req.params.sustain)
+			fireargs.sustain = parseFloat(req.params.sustain);
+		
+		if (req.params.release)
+			fireargs.release = parseFloat(req.params.release);
+		
+		if (req.params.minvalue)
+			fireargs.minvalue = parseInt(req.params.minvalue, 10);
+		
+		if (req.params.maxvalue)
+			fireargs.maxvalue = parseInt(req.params.maxvalue, 10);
+
+		_this.seq.triggerEnvelope(fireargs);
+
+		res.setHeader('content-type', 'text/plain');
+		res.send('ok');
+	});
+}
+
 Service.prototype.addMiscRoutes = function(server) {
 	var _this = this;
 
@@ -246,6 +292,7 @@ Service.prototype.start = function() {
 	this.addSongRoutes(server);
 	this.addSongTrackRoutes(server);
 	this.addSongTrackPatternRoutes(server);
+	this.addEnvelopeRoutes(server);
 	server.listen(this.port, function() {
 		console.log('%s listening at %s', server.name, server.url);
 	});
