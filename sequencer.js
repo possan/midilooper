@@ -9,6 +9,7 @@ var SeqTrack = function(opts) {
 		currentPattern : 0,
 		currentStep : 0,
 		cuedPattern : -1,
+		cuedNote: null,
 		step : function() {
 		}
 	};
@@ -175,7 +176,7 @@ exports.Sequencer = function(opts) {
 		},
 		
 		queueNote : function(chan, note, vel, stepsdur) {
-			// console.log('starting note '+note+' (velocity: ' + vel +', gate time: ' + stepsdur+') on channel '+chan);
+			console.log('starting note '+note+' (velocity: ' + vel +', gate time: ' + stepsdur+') on channel '+chan);
 			_midiout([ 0x90 + chan, note, vel ]);
 			_runningnotes.push({
 				chan : chan,
@@ -200,6 +201,22 @@ exports.Sequencer = function(opts) {
 				return -1;
 			var trk = _tracks[track];
 			trk.cuedPattern = pattern;
+		},
+
+		cueNote: function(track, note, velocity, validsteps) {
+			if (track < 0 || track > 15)
+				return;
+			console.log('cue note ' + note + ' on track ' + track);
+			var trk = _tracks[track];
+			var cn = {
+				note: note,
+				velocity: velocity,
+				steps: []
+			};
+			for(var i=0; i<validsteps.length; i++)
+				cn.steps.push(parseInt(validsteps[i], 10));
+			console.log('cn', cn);
+			trk.cuedNote = cn;
 		},
 
 		getPlayingPatternStep : function(track) {
@@ -227,6 +244,16 @@ exports.Sequencer = function(opts) {
 			var spat = strk.getPattern(patindex);
 			if (spat == null)
 				return;
+			var strk2 = _tracks[trackindex];
+
+			if (strk2.cuedNote) {
+				if (strk2.cuedNote.steps.indexOf(patstep % 16) != -1) {
+					console.log('consumed cued note', strk2.cuedNote);
+					this.queueNote(strk.channel, strk2.cuedNote.note, strk2.cuedNote.velocity, 64);
+					strk2.cuedNote = null;
+				}
+			} 
+
 			var sstp = spat.getStep(patstep);
 			if (sstp == null)
 				return;
@@ -298,15 +325,19 @@ exports.Sequencer = function(opts) {
 				if (re.channel == opts.channel && re.control == opts.control) {
 					found = i;
 				}
-			}			
+			}
 			if (found != -1) {
 				var re = _runningenvelopes[found];
 				re.setup(opts);
-				re.start();
+				if (opts.trigger) {
+					re.start();
+				}
 			} else {
 				var re = new Envelope();
 				re.setup(opts);
-				re.start();
+				if (opts.trigger) {
+					re.start();
+				}
 				_runningenvelopes.push(re);
 			}
 		},

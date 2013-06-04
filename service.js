@@ -89,6 +89,21 @@ Service.prototype.addPlayerRoutes = function(server) {
 		res.send('ok');
 	});
 
+	server.post('/player/track/:track/cuenote', function(req, res, next) {
+		var track = parseInt(req.params.track, 10);
+		var not = parseInt(req.params.note, 10);
+		var vol = 100;
+		if (req.params.velocity)
+			vol = parseInt(req.params.velocity, 10);
+		var validsteps = '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15'.split(',');
+		if (req.params.validsteps)
+			validsteps = req.params.validsteps.split(',');
+		// console.log('Cue note '+not+' (vel '+vol+') on track '+track', validsteps='+validsteps);
+		_this.seq.cueNote(track, not, vol, validsteps);
+		res.setHeader('content-type', 'text/plain');
+		res.send('ok');
+	});
+
 	server.post('/player/track/:track/note', function(req, res, next) {
 		console.log('TODO: Support previewing note events');
 		res.setHeader('content-type', 'text/plain');
@@ -242,7 +257,8 @@ Service.prototype.addEnvelopeRoutes = function(server) {
 
 		var fireargs = {
 			channel: 0,
-			control: 0
+			control: 0,
+			trigger: true
 		};
 
 		if (req.params.channel)
@@ -266,8 +282,11 @@ Service.prototype.addEnvelopeRoutes = function(server) {
 		if (req.params.maxvalue)
 			fireargs.maxvalue = parseInt(req.params.maxvalue, 10);
 
-		_this.seq.triggerEnvelope(fireargs);
+		if (req.params.silent)
+			fireargs.trigger = parseInt(req.params.silent, 10) > 0;
 
+		_this.seq.triggerEnvelope(fireargs);
+	
 		res.setHeader('content-type', 'text/plain');
 		res.send('ok');
 	});
