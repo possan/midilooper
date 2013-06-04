@@ -96,8 +96,8 @@ Service.prototype.addPlayerRoutes = function(server) {
 		if (req.params.velocity)
 			vol = parseInt(req.params.velocity, 10);
 		var validsteps = '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15'.split(',');
-		if (req.params.validsteps)
-			validsteps = req.params.validsteps.split(',');
+		if (req.params.steps)
+			validsteps = req.params.steps.split(',');
 		// console.log('Cue note '+not+' (vel '+vol+') on track '+track', validsteps='+validsteps);
 		_this.seq.cueNote(track, not, vol, validsteps);
 		res.setHeader('content-type', 'text/plain');
